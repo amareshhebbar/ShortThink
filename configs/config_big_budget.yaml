@@ -1,0 +1,129 @@
+hf_user: AmareshHebbar
+base_model: Qwen/Qwen3-1.7B
+base_label: Qwen3 1.7B
+repo_prefix: ShortThink_Qwen3_1.7B
+dataset_name: ShortThink_Traces_Qwen3_1.7B
+private: false
+seed: 42
+gpu_cost_per_hour: 0.86
+
+collection:
+  title: ShortThink
+  description: Qwen3 1.7B reasoning models trained to stop overthinking. Same data, six algorithms, one honest comparison table.
+
+paths:
+  work: /workspace/shortthink_runs
+
+gen:
+  max_model_len: 12288
+  gpu_memory_utilization: 0.88
+  think:
+    temperature: 0.6
+    top_p: 0.95
+    top_k: 20
+  nothink:
+    temperature: 0.7
+    top_p: 0.8
+    top_k: 20
+
+factory:
+  samples: 8
+  max_tokens: 6144
+  max_questions: 0
+  chunk_questions: 1500
+  min_len_ratio: 0.15
+  pair_min_ratio: 1.5
+  max_sft_tokens: 4096
+  max_pair_tokens: 6144
+
+eval:
+  quick_n: 100
+  samples: 4
+  aime: true
+  aime_samples: 8
+  max_tokens: 10240
+  budget_tokens: 1024
+  budget_tail: 512
+  latency_n: 20
+  mmlu: true
+  mmlu_max_model_len: 4096
+  gate_acc_drop: 0.06
+  gate_format_rate: 0.85
+  merge_acc_drop: 0.02
+
+lora:
+  r: 64
+  alpha: 128
+  dropout: 0.0
+
+train:
+  sft:
+    init: base
+    mode: lora
+    lr: 1.0e-4
+    epochs: 2
+    micro_batch: 4
+    grad_accum: 8
+    warmup_ratio: 0.03
+    max_len: 4608
+    logits_chunk: 1024
+    max_examples: 0
+  dpo:
+    init: sft
+    mode: lora
+    lr: 5.0e-6
+    epochs: 1
+    micro_batch: 1
+    grad_accum: 16
+    warmup_ratio: 0.05
+    max_len: 6656
+    logits_chunk: 1024
+    beta: 0.1
+    max_examples: 0
+  orpo:
+    init: base
+    mode: lora
+    lr: 5.0e-5
+    epochs: 1
+    micro_batch: 1
+    grad_accum: 16
+    warmup_ratio: 0.05
+    max_len: 6656
+    logits_chunk: 1024
+    lam: 0.1
+    max_examples: 0
+  simpo:
+    init: sft
+    mode: lora
+    lr: 1.0e-5
+    epochs: 1
+    micro_batch: 1
+    grad_accum: 16
+    warmup_ratio: 0.05
+    max_len: 6656
+    logits_chunk: 1024
+    beta: 2.0
+    gamma_beta_ratio: 0.5
+    max_examples: 0
+  grpo:
+    init: base
+    lr: 2.0e-5
+    max_steps: 400
+    num_generations: 8
+    per_device_batch: 4
+    grad_accum: 16
+    warmup_ratio: 0.03
+    max_prompt_length: 512
+    max_completion_length: 3072
+    vllm_gpu_memory_utilization: 0.3
+    alpha: 0.5
+    beta: 0.0
+    temperature: 0.6
+    top_p: 0.95
+    top_k: 20
+    max_prompts: 0
+
+merge:
+  models: []
+  weights: [0.5, 0.5]
+  density: 0.5
