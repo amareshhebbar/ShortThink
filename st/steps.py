@@ -1,9 +1,22 @@
-from .common import ACTIONS, MODELS, POLICIES
+import os
+
+from .common import ACTIONS, MODELS
+
+
+def selected_models():
+    only = os.environ.get("ONLY_MODELS", "").strip()
+    if not only:
+        return list(MODELS)
+    want = [m.strip().lower() for m in only.split(",") if m.strip()]
+    bad = [m for m in want if m not in MODELS]
+    if bad:
+        raise SystemExit(f"ONLY_MODELS has unknown models {bad}, choose from {MODELS}")
+    return [m for m in MODELS if m in want]
 
 
 def pipeline_steps():
     steps = ["baseline", "baseline_mmlu", "factory"]
-    for m in POLICIES + ["ties"]:
+    for m in selected_models():
         steps += [f"{m}:{a}" for a in ACTIONS]
     steps.append("report")
     return steps
