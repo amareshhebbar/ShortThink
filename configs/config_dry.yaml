@@ -1,0 +1,130 @@
+hf_user: AmareshHebbar
+base_model: Qwen/Qwen3-1.7B
+base_label: Qwen3 1.7B
+repo_prefix: ShortThinkDRY_Qwen3_1.7B
+dataset_name: ShortThinkDRY_Traces_Qwen3_1.7B
+private: true
+seed: 42
+gpu_cost_per_hour: 1.0
+
+collection:
+  title: ShortThink dry run
+  description: Throwaway dry run of the ShortThink pipeline. Safe to delete.
+
+paths:
+  work: /workspace/shortthink_dry
+
+gen:
+  max_model_len: 6144
+  gpu_memory_utilization: 0.85
+  think:
+    temperature: 0.6
+    top_p: 0.95
+    top_k: 20
+  nothink:
+    temperature: 0.7
+    top_p: 0.8
+    top_k: 20
+
+factory:
+  samples: 4
+  max_tokens: 3072
+  max_questions: 400
+  chunk_questions: 400
+  min_len_ratio: 0.15
+  pair_min_ratio: 1.3
+  max_sft_tokens: 2048
+  max_pair_tokens: 3072
+
+eval:
+  quick_n: 20
+  full_n: 40
+  samples: 1
+  aime: false
+  aime_samples: 1
+  max_tokens: 3072
+  budget_tokens: 512
+  budget_tail: 256
+  latency_n: 2
+  mmlu: false
+  mmlu_max_model_len: 4096
+  gate_acc_drop: 0.25
+  gate_format_rate: 0.6
+  merge_acc_drop: 0.25
+
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.0
+
+train:
+  sft:
+    init: base
+    mode: lora
+    lr: 1.0e-4
+    epochs: 1
+    micro_batch: 2
+    grad_accum: 4
+    warmup_ratio: 0.03
+    max_len: 2560
+    logits_chunk: 512
+    max_examples: 64
+  dpo:
+    init: sft
+    mode: lora
+    lr: 5.0e-6
+    epochs: 1
+    micro_batch: 1
+    grad_accum: 4
+    warmup_ratio: 0.05
+    max_len: 3584
+    logits_chunk: 512
+    beta: 0.1
+    max_examples: 32
+  orpo:
+    init: base
+    mode: lora
+    lr: 5.0e-5
+    epochs: 1
+    micro_batch: 1
+    grad_accum: 4
+    warmup_ratio: 0.05
+    max_len: 3584
+    logits_chunk: 512
+    lam: 0.1
+    max_examples: 32
+  simpo:
+    init: sft
+    mode: lora
+    lr: 1.0e-5
+    epochs: 1
+    micro_batch: 1
+    grad_accum: 4
+    warmup_ratio: 0.05
+    max_len: 3584
+    logits_chunk: 512
+    beta: 2.0
+    gamma_beta_ratio: 0.5
+    max_examples: 32
+  grpo:
+    init: base
+    lr: 2.0e-5
+    max_steps: 5
+    num_generations: 8
+    per_device_batch: 4
+    grad_accum: 4
+    warmup_ratio: 0.1
+    max_prompt_length: 512
+    max_completion_length: 1024
+    vllm_gpu_memory_utilization: 0.3
+    alpha: 0.5
+    beta: 0.0
+    temperature: 0.6
+    top_p: 0.95
+    top_k: 20
+    max_prompts: 0
+
+merge:
+  models: []
+  weights: [0.5, 0.5]
+  density: 0.5

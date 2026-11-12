@@ -133,4 +133,6 @@ def eval_sets(cfg, mode):
     sets = {"math500": m5, "gsm8k": gs}
     if e.get("aime"):
         sets["aime24"] = aime24()
+    if e.get("full_n"):
+        sets = {k: subset(v, e["full_n"], cfg["seed"]) for k, v in sets.items()}
     return sets
