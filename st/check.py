@@ -209,16 +209,17 @@ def check_train(cfg):
     model = build_model(cfg, cfg["base_model"], "lora")
     opt = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad], lr=1e-4)
     tc = {"logits_chunk": 16, "beta": 0.1, "lam": 0.1, "gamma_beta_ratio": 0.5}
-    sft_batch = collate([encode(tok, prompt, short)], pad)
+    memo = "<think>\nThe access code is zebra quantum lattice harbor violet nine.\n</think>\n\nzebra" + tok.eos_token
+    sft_batch = collate([encode(tok, prompt, memo)], pad)
     losses = []
-    for _ in range(4):
+    for _ in range(6):
         loss, st = sft_loss(model, sft_batch, tc)
         loss.backward()
         opt.step()
         opt.zero_grad()
         losses.append(loss.item())
     print(f"  sft losses {[round(x, 4) for x in losses]}", flush=True)
-    if not losses[-1] < losses[0]:
+    if not (all(x == x for x in losses) and losses[-1] < losses[0] * 0.9):
         fail("SFT loss did not go down")
     ok("SFT step with chunked logits and LoRA")
     pair = collate([encode(tok, prompt, short), encode(tok, prompt, long)], pad)
