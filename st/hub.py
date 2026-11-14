@@ -52,7 +52,7 @@ def push_model(cfg, name):
     api.upload_folder(folder_path=str(local), repo_id=repo, commit_message=f"Upload ShortThink {name.upper()} weights")
     adapter = model_dir(cfg, name) / "adapter"
     if adapter.exists():
-        api.upload_folder(folder_path=str(adapter), path_in_repo="adapter", repo_id=repo, commit_message="Upload LoRA adapter")
+        api.upload_folder(folder_path=str(adapter), path_in_repo="adapter", repo_id=repo, commit_message="Upload LoRA adapter", ignore_patterns=["README.md"])
     logs = model_dir(cfg, name) / "training"
     if logs.exists():
         api.upload_folder(folder_path=str(logs), path_in_repo="training", repo_id=repo, commit_message="Upload training logs")
