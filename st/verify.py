@@ -46,7 +46,7 @@ def verify_model(cfg, name):
     for k, b in res["benchmarks"].items():
         t = cfg["eval"]["gate_format_rate"]
         if k in base_b:
-            t = min(t, base_b[k]["format_rate"] - cfg["eval"]["gate_acc_drop"])
+            t = min(t, base_b[k]["format_rate"] - cfg["eval"].get("gate_format_drop_by_model", {}).get(name, cfg["eval"]["gate_acc_drop"]))
         need[k] = round(t, 4)
     gates = {"format_rate": all(b["format_rate"] >= need[k] for k, b in res["benchmarks"].items())}
     if base:
